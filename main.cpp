@@ -9,10 +9,8 @@
 
 using namespace std;
 
-int width = 1000, height = 1000;
-int max_threads = 10;
-
-
+int width = 500, height = 500;
+int max_threads = 5;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -48,7 +46,7 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
         long double red = 0;
         long double green = 0;
         long double blue = 0;
-        mpf_set_default_prec(100);
+        mpf_set_default_prec(30 + (int)((float)count / 10.0));
         mpf_t mpf_x0;
         mpf_t mpf_y0;
         mpf_t mpf_xstart;
@@ -108,6 +106,7 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
         mpf_set_str (mpf_2, "2.0", 10);
         mpf_set_str (mpf_4, "1000000.0", 10);
 	for(int y = start; y < end; y++){
+        cout << y << endl;
 		for(int x = 0; x < width; x++){
                 
 
@@ -132,8 +131,8 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
                                                     //cout << endl<< " offset " << endl;
                 //mpf_out_str(stdout,  10, 200, mpf_tmp_x0);
 
-                mpf_set_d(mpf_tmp_x1, pow( 0.5, count / 30.0 ) );
-                mpf_set_d(mpf_tmp_y1, pow( 0.5, count / 30.0 ) );
+                mpf_set_d(mpf_tmp_x1, pow( 0.5, count / 60.0 ) );
+                mpf_set_d(mpf_tmp_y1, pow( 0.5, count / 60.0 ) );
 
                 //cout << endl<< " scale " << endl;
                 //mpf_out_str(stdout,  10, 200, mpf_tmp_x1);
@@ -179,7 +178,7 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
                 double i;
         
                 
-                float max_itr =(300 + 20 * count);
+                float max_itr =(20 + (0.000002 * pow((float)count, 2.51)));
                 float skip = 0.0;// pow(count/100.0, 2.0);
                 float sum = 0.0, sum2 = 0.0;
                 
@@ -280,30 +279,27 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
                 
                
                 
-                
-                
-
  
                 
                 //double v = r * pow((count + 200.0)/200.0, 1.8) ;
              
-                double  v = 3.0 * pow(1.5 + count/1000.0, 4.0);
+                double  v = 3.0 * pow(1.5 + count/2000.0, 4.0);
                 
              
                 
                
                 float theta = atan2(cx - sx, cy - sy);
+                theta = 0.0;
 
                 float t2 = 0.5  * sin(2.0 * theta);
-                theta = sin(1.0 * theta) * (1.0 + 0.5 * sin(count/300.0));
+                theta = sin(1.0 * theta);
                 
                 
                 r = r * v;
+
                 
                
     
-             
-       
                 
                 r = 0.5 + 0.5 * sin(1.0 * r + count / 100.0 + t2 );
                 
@@ -328,17 +324,20 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
 
                 float reds[] =
                 {   0.5 + 0.5 * sin( 3.0 +  theta  + (i)/ 20.0  + (count)/ 80.0),
-                    0.5 + 0.5 * sin(5.0 +  theta + (i)/ 30.0  + (count)/ 90.0),
+                    0.0,
+                    //0.5 + 0.5 * sin(5.0 +  theta + (i)/ 30.0  + (count)/ 90.0),
                     0.5 + 0.5 * sin(8.0 +  theta + (i)/ 40.0  + (count)/ 100.0)
                 };
                 float greens[] =
                 {   0.5 + 0.5 * sin( 5.0 +  theta + (i)/ 40.0 + (count)/ 80.0),
-                    0.5 + 0.5 * sin(4.0 +  theta + (i)/ 25.0 + (count)/ 100.0),
+                    0.0,
+                    //0.5 + 0.5 * sin(4.0 +  theta + (i)/ 25.0 + (count)/ 100.0),
                     0.5 + 0.5 * sin(6.0 +  theta + (i)/ 50.0 + (count)/ 130.0)
                 };
                 float blues[] =
                 {   0.5 + 0.5 * sin(3.0 +  2.0 * theta + (i)/ 30.0 + (count)/ 135.0),
-                    0.5 + 0.5 * sin(7.0 +  2.0 * theta + (i)/ 50.0 + (count)/ 80.0),
+                    0.0,
+                    //0.5 + 0.5 * sin(7.0 +  2.0 * theta + (i)/ 50.0 + (count)/ 80.0),
                     0.5 + 0.5 * sin(0.0 +  2.0 * theta + (i)/ 70.0 + (count)/ 105.0)
                 };
                 
@@ -391,7 +390,7 @@ int main(){
 	  
 	  std::thread myThreads[max_threads];
 
-	  for(int j = 0; j < 5000; j++){
+	  for(int j = 0; j < 5001; j += 1){
 	  		string filename = "pictures/scene"  + to_string(j) + ".png";
 	
 
