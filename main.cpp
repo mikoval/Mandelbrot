@@ -9,8 +9,11 @@
 
 using namespace std;
 
-int width = 500, height = 500;
-int max_threads = 5;
+int width2 = 1000, height2 = 1000;
+int alias = 1;
+
+int width = width2 * alias, height = height2 * alias;
+int max_threads = 15;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -178,7 +181,7 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
                 double i;
         
                 
-                float max_itr =(20 + (0.000002 * pow((float)count, 2.51)));
+                float max_itr =(80 + (0.0000015 * pow((float)count, 2.51)));
                 float skip = 0.0;// pow(count/100.0, 2.0);
                 float sum = 0.0, sum2 = 0.0;
                 
@@ -283,7 +286,7 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
                 
                 //double v = r * pow((count + 200.0)/200.0, 1.8) ;
              
-                double  v = 3.0 * pow(1.5 + count/2000.0, 4.0);
+                double  v = 1.0 * pow(1.5 + count/1300.0, 4.0);
                 
              
                 
@@ -323,22 +326,22 @@ void draw(std::vector<unsigned char>* image, int i, int max_threads, int width, 
             
 
                 float reds[] =
-                {   0.5 + 0.5 * sin( 3.0 +  theta  + (i)/ 20.0  + (count)/ 80.0),
+                {   0.5 + 0.5 * sin( 3.0 +  theta  + (i)/ 40.0  + (count)/ 280.0),
                     0.0,
-                    //0.5 + 0.5 * sin(5.0 +  theta + (i)/ 30.0  + (count)/ 90.0),
-                    0.5 + 0.5 * sin(8.0 +  theta + (i)/ 40.0  + (count)/ 100.0)
+                    //0.5 + 0.5 * sin(5.0 +  theta + (i)/ 50.0  + (count)/ 90.0),
+                    0.5 + 0.5 * sin(8.0 +  theta + (i)/ 35.0  + (count)/ 300.0)
                 };
                 float greens[] =
-                {   0.5 + 0.5 * sin( 5.0 +  theta + (i)/ 40.0 + (count)/ 80.0),
+                {   0.5 + 0.5 * sin( 5.0 +  theta + (i)/ 25.0 + (count)/ 180.0),
                     0.0,
                     //0.5 + 0.5 * sin(4.0 +  theta + (i)/ 25.0 + (count)/ 100.0),
-                    0.5 + 0.5 * sin(6.0 +  theta + (i)/ 50.0 + (count)/ 130.0)
+                    0.5 + 0.5 * sin(6.0 +  theta + (i)/ 35.0 + (count)/ 230.0)
                 };
                 float blues[] =
-                {   0.5 + 0.5 * sin(3.0 +  2.0 * theta + (i)/ 30.0 + (count)/ 135.0),
+                {   0.5 + 0.5 * sin(3.0 +  2.0 * theta + (i)/ 30.0 + (count)/ 235.0),
                     0.0,
-                    //0.5 + 0.5 * sin(7.0 +  2.0 * theta + (i)/ 50.0 + (count)/ 80.0),
-                    0.5 + 0.5 * sin(0.0 +  2.0 * theta + (i)/ 70.0 + (count)/ 105.0)
+                    //0.5 + 0.5 * sin(7.0 +  2.0 * theta + (i)/ 20.0 + (count)/ 80.0),
+                    0.5 + 0.5 * sin(0.0 +  2.0 * theta + (i)/ 25.0 + (count)/ 205.0)
                 };
                 
                 
@@ -386,22 +389,51 @@ int main(){
 	  std::vector<unsigned char> image;
 	  image.resize(width * height * 4);
 	  
+	  std::vector<unsigned char> image2;
+	  image2.resize(width2 * height2 * 4);
 
 	  
 	  std::thread myThreads[max_threads];
 
-	  for(int j = 0; j < 5001; j += 1){
-	  		string filename = "pictures/scene"  + to_string(j) + ".png";
-	
+	  for(int j = 0; j < 5001; j += 500){
+		  string filename = "pictures/scene"  + to_string(j) + ".png";
 
-		  	for (int i=0; i<max_threads; i++){
-		        myThreads[i] = std::thread(draw, &image, i, max_threads, width, height, j);
 
-		    }
-		    for (int i=0; i<max_threads; i++){
-		        myThreads[i].join();
-		    }
-		    encodeOneStep((const char*)filename.data(), image, width, height);
+		  for (int i=0; i<max_threads; i++){
+			  myThreads[i] = std::thread(draw, &image, i, max_threads, width, height, j);
+
+		  }
+		  for (int i=0; i<max_threads; i++){
+			  myThreads[i].join();
+		  }
+		  for (int x = 0; x < width2; x++){
+			  for (int y = 0; y < height2; y++){
+				  int red = 0;
+				  int green = 0;
+				  int blue = 0;
+				  int count = 0;
+				  for(int a = 0; a < alias; a++){
+					  for(int b = 0; b < alias; b++){
+						  count++;
+						  int x0 = alias * x + a;
+						  int y0 = alias * y + b;
+						  red += image[y0 * 4 * height + x0 * 4 + 0]; 
+						  green += image[y0 * 4 * height + x0 * 4 + 1]; 
+						  blue += image[y0 * 4 * height + x0 * 4 + 2]; 
+					  }
+				  }
+				  red /= count;
+				  blue /= count;
+				  green /= count;
+
+				  image2[y * 4 * height2 + x * 4 + 0] = red; 
+				  image2[y * 4 * height2 + x * 4 + 1] = green; 
+				  image2[y * 4 * height2 + x * 4 + 2] = blue; 
+				  image2[y * 4 * height2 + x * 4 + 3] = 255; 
+			  }
+		  }
+
+		  encodeOneStep((const char*)filename.data(), image2, width2, height2);
 	  }
 
 	    
