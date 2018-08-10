@@ -11,13 +11,14 @@ using namespace std;
 
 #define MAX_FRAMES 5000
 #define KEY_SIZE 10
+#define START 2250
 
-int width2 = 2000, height2 = 2000;
+int width2 = 1000, height2 = 1000;
 int alias = 1;
 int mult = 3;
 
 int width = width2 * alias, height = height2 * alias;
-int max_threads = 15;
+int max_threads = 5;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -360,11 +361,11 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
 
           
     
-                if(i >= max_itr -1.0){
+                if(i > max_itr){
                     red = 0;
                     green = 0;
                     blue = 0;
-                    i = 0;
+                    i = -1.0;
                 }
                 red = red ;
                 green = green ;
@@ -386,6 +387,20 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
 
 }
 
+void newCoord(double *ret, double x, double y, double mag, double mag2){
+    double sx = 0.360240443437;
+    double sy = -0.64131306106480317;
+
+    double cx = sx + mag * 4.0 * (((long double)x / (long double)width) - 0.5);
+    double cy = sy + mag * 4.0 * (((long double)y / (long double)height) - 0.5);
+
+    double ox = 0.25 * width * (cx - sx) / mag2 + 0.5 * width;
+    double oy = 0.25 * height * (cy - sy) / mag2 + 0.5 * height;
+
+    ret[0] = ox;
+    ret[1] = oy;
+
+}
 
 int main(){
 	  //NOTE: this sample will overwrite the file or test.png without warning!
@@ -407,7 +422,7 @@ int main(){
 
 
         
-	  for(int j = 0; j < MAX_FRAMES; j += KEY_SIZE){
+	  for(int j = START; j < MAX_FRAMES; j += KEY_SIZE){
 
 
 //          std::vector<unsigned char> tmp = image2;
@@ -453,15 +468,14 @@ int main(){
                       double blue = 0;
 
                         
-                        double sx = 0.360240443437;
-                        double sy = -0.64131306106480317;
 
 
-                        double cx = sx + mag * 4.0 * (((long double)x / (long double)width) - 0.5);
-                        double cy = sy + mag * 4.0 * (((long double)y / (long double)height) - 0.5);
+                        double arr[2];
 
-                        double ox = 0.25 * width * (cx - sx) / mag2 + 0.5 * width;
-                        double oy = 0.25 * height * (cy - sy) / mag2 + 0.5 * height;
+                        newCoord(arr, x, y, mag, mag2);
+
+                        double ox = arr[0];
+                        double oy = arr[1];
 
                         double xfract = ox - floor(ox);
                         double yfract = oy - floor(oy);
@@ -469,11 +483,10 @@ int main(){
                         yfract = 1.0 - yfract;
 
 
-
                         int xind = (int) ox;
                         int yind = (int) oy;
-                        int xind2 = (int) ox + 1;
-                        int yind2 = (int) oy  + 1;
+                        int xind2 = (int) ox + 0;
+                        int yind2 = (int) oy  + 0;
 
                         std::vector<double> *iptr = &image1;
 
@@ -493,6 +506,9 @@ int main(){
                         float red1 = r1 * xfract + r2 * (1.0 - xfract);
                         float red2 = r3 * xfract + r4 * (1.0 - xfract);
                         float red3 = red1 * yfract + red2 * (1.0 - yfract);
+                        if(r1 < 0 || r2 < 0 || r3 < 0 || r4 < 0){
+                            red3 = -1.0;
+                        }
 
                         float g1 = (*iptr)[yind * 4 * height + xind * 4 + 1];
                         float g2 = (*iptr)[yind * 4 * height + xind2 * 4 + 1];
@@ -501,7 +517,6 @@ int main(){
                         float green1 = g1 * xfract + g2 * (1.0 - xfract);
                         float green2 = g3 * xfract + g4 * (1.0 - xfract);
                         float green3 = green1 * yfract + green2 * (1.0 - yfract);
-
 
                         float b1 = (*iptr)[yind * 4 * height + xind * 4 + 2];
                         float b2 = (*iptr)[yind * 4 * height + xind2 * 4 + 2];
@@ -532,17 +547,13 @@ int main(){
                      
                         
                        
-                        float theta = atan2(cx - sx, cy - sy);
-                        theta = 0.0;
-
-                        float t2 = 0.5  * sin(2.0 * theta);
-                        theta = sin(1.0 * theta);
+                        float theta = 0.0;
                         
                         
                         r = r * v;
 
                         
-                        r = 0.5 + 0.5 * sin(1.0 * r + count / 100.0 + t2 );
+                        r = 0.5 + 0.5 * sin(1.0 * r + count / 100.0);
                         
                    
                         
@@ -587,7 +598,7 @@ int main(){
                             green = g1x + (g2x - g1x) * frac;
                             blue = b1x + (b2x - b1x) * frac;
                         
-                            if(i0 <= 0.0 || i0 >= max_itr  - 1.0){
+                            if(i0 <= 0.0 || i0 > max_itr - 0.0){
                                 red = 0;
                                 green = 0;
                                 blue = 0;
