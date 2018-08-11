@@ -10,7 +10,7 @@
 using namespace std;
 
 #define MAX_FRAMES 20000
-#define KEY_SIZE 10
+#define KEY_SIZE 30
 #define START 0
 
 int width2 = 2000, height2 = 2000;
@@ -31,7 +31,7 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
   if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
 }
 
-void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  int count ){
+void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  double count ){
         mpf_set_default_prec(100 + (int)((float)count / 10.0));
 	int start = (int)(  ((float)i / (float)max_threads) * (float)height);
 	int end = (int)(((float)(i+1) / (float)max_threads) * (float)height);
@@ -513,9 +513,9 @@ int main(){
 	  image1.resize(width * height * 4);
 	  
 
-	  std::vector<unsigned char> out_image;
-	  out_image.resize(width2 * height2 * 4);
 
+      	  std::vector<unsigned char> image;
+      	  image.resize(width * height * 4);
 	  
 	  std::thread myThreads[max_threads];
 
@@ -530,7 +530,7 @@ int main(){
 
 
 		  for (int i=0; i<max_threads; i++){
-			  myThreads[i] = std::thread(draw, &image1, i, max_threads, width, height, j);
+			  myThreads[i] = std::thread(draw, &image1, i, max_threads, width, height, (double)j / 2.0);
 
 		  }
 		  for (int i=0; i<max_threads; i++){
@@ -542,21 +542,21 @@ int main(){
           }
 
           for(int i = 0; i < KEY_SIZE; i++){
-              cout << i << endl;
               int iterations = i + (j - KEY_SIZE);
               string filename = "pictures/scene"  + to_string(iterations) + ".png";
 
-              std::vector<unsigned char> image;
-              image.resize(width * height * 4);
+
 
               double count = iterations;
+	      count /= 2.0;
               double count2 = j;
               double count3 = j - KEY_SIZE;
+	      count2 /= 2.0;
+	      count3 /= 2.0;
               double mag = pow( 0.5, count / 60.0 );
               double mag2 = pow( 0.5, count3 / 60.0 );
               double mag3 = pow( 0.5, count3 / 60.0 );
 
-              cout << mag / mag2 << endl;
 
                 mpf_set_d(mpf_tmp_x1, mag );
                 mpf_set_d(mpf_tmp_y1, mag );
@@ -575,7 +575,6 @@ int main(){
                       double red = 0;
                       double green = 0;
                       double blue = 0;
-
                         
 	{
 
@@ -601,8 +600,44 @@ int main(){
                 mpf_add(mpf_y0, mpf_tmp_y4, mpf_y0);
 
 	}
-	double ox = mpf_get_d(mpf_x0);
-	double oy = mpf_get_d(mpf_y0);
+                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
+              for (int x = 0; x < width; x++){
+                  for (int y = 0; y < height; y++){
+                      //cout << "INDEX: " << x << ", " << y << endl;
+
+                mpf_set_d(mpf_tmp_x0, 4.0 * (((long double)x / (long double)width) - 0.5));
+                mpf_set_d(mpf_tmp_y0, 4.0 * (((long double)y / (long double)height) - 0.5));
+                      double red = 0;
+                      double green = 0;
+                      double blue = 0;
+                        
+	{
+
+
+                mpf_mul(mpf_tmp_x0, mpf_tmp_x0, mpf_tmp_x1);
+                mpf_mul(mpf_tmp_y0, mpf_tmp_y0, mpf_tmp_y1);
+
+                mpf_add(mpf_x0, mpf_tmp_x0, mpf_xstart);
+                mpf_add(mpf_y0, mpf_tmp_y0, mpf_ystart);
+
+                mpf_sub(mpf_x0, mpf_x0, mpf_xstart);
+                mpf_sub(mpf_y0, mpf_y0, mpf_ystart);
+
+                mpf_mul(mpf_x0, mpf_tmp_x2, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y2, mpf_y0);
+
+
+                mpf_mul(mpf_x0, mpf_tmp_x3, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y3, mpf_y0);
+
+
+                mpf_add(mpf_x0, mpf_tmp_x4, mpf_x0);
+                mpf_add(mpf_y0, mpf_tmp_y4, mpf_y0);
+
+	}
+	double ox2 = mpf_get_d(mpf_x0);
+	double oy2 = mpf_get_d(mpf_y0);
 
 
                         double xfract = ox - floor(ox);
@@ -610,23 +645,45 @@ int main(){
                         xfract = 1.0 - xfract;
                         yfract = 1.0 - yfract;
 
-
                         int xind = (int) ox;
                         int yind = (int) oy;
-                        int xind2 = (int) ox + 0;
-                        int yind2 = (int) oy  + 0;
+                        int xind2 = (int) ox + 1;
+                        int yind2 = (int) oy  + 1;
 
                         std::vector<double> *iptr = &image1;
 
-                        if(xind < 0 || xind > width ||
-                           xind2 < 0 || xind2 > width || 
-                           yind < 0 || yind > height || 
-                           yind2 < 0 || yind2 > height) {
+                        if(xind < 0 || xind >= width ||
+                           xind2 < 0 || xind2 >= width || 
+                           yind < 0 || yind >= height || 
+                           yind2 < 0 || yind2 >= height) {
+
+                                continue;
+                        }
+
+                        double xfract2 = ox2 - floor(ox2);
+                        double yfract2 = oy2 - floor(oy2);
+                        x2fract = 1.0 - x2fract;
+                        y2fract = 1.0 - y2fract;
+
+                        int x2ind = (int) ox;
+                        int y2ind = (int) oy;
+                        int x2ind2 = (int) ox + 1;
+                        int y2ind2 = (int) oy  + 1;
+
+			/////////////////////////////////////////////////////////////////////
+
+                        if(xind < 0 || xind >= width ||
+                           xind2 < 0 || xind2 >= width || 
+                           yind < 0 || yind >= height || 
+                           yind2 < 0 || yind2 >= height) {
 
                                 continue;
                         }
 
 
+
+
+			
                         float r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
                         float r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
                         float r3 = (*iptr)[yind2 * 4 * height + xind * 4 + 0];
@@ -662,14 +719,50 @@ int main(){
                       //
                       //
 
-                      {
                           double i0 =  red3; 
                           double r = green3; 
                           blue = blue3;
 
 
+                        std::vector<double> *iptr = &image1;
                 
+                        r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
+                        r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
+                        r3 = (*iptr)[yind2 * 4 * height + xind * 4 + 0];
+                        r4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 0];
+                        red1 = r1 * xfract + r2 * (1.0 - xfract);
+                        red2 = r3 * xfract + r4 * (1.0 - xfract);
+                        red3 = red1 * yfract + red2 * (1.0 - yfract);
+                        if(r1 < 0 || r2 < 0 || r3 < 0 || r4 < 0){
+                            red3 = -1.0;
+                        }
+
+                        g1 = (*iptr)[yind * 4 * height + xind * 4 + 1];
+                        g2 = (*iptr)[yind * 4 * height + xind2 * 4 + 1];
+                        g3 = (*iptr)[yind2 * 4 * height + xind * 4 + 1];
+                        g4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 1];
+                        green1 = g1 * xfract + g2 * (1.0 - xfract);
+                        green2 = g3 * xfract + g4 * (1.0 - xfract);
+                        green3 = green1 * yfract + green2 * (1.0 - yfract);
+
+                        b1 = (*iptr)[yind * 4 * height + xind * 4 + 2];
+                        b2 = (*iptr)[yind * 4 * height + xind2 * 4 + 2];
+                        b3 = (*iptr)[yind2 * 4 * height + xind * 4 + 2];
+                        b4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 2];
+                        blue1 = b1 * xfract + b2 * (1.0 - xfract);
+                        blue2 = b3 * xfract + b4 * (1.0 - xfract);
+                        blue3 = blue1 * yfract + blue2 * (1.0 - yfract);
+
+
+
+                          double i02 =  red3; 
+                          double r2 = green3; 
+                          blue = blue3;
+
+			  
+			  ///////////////////////////////////////////////////////////////////////
                 
+			  {
                         double  v = 1.0 * pow(1.5 + count/1300.0, 4.0);
                         
                      
@@ -757,35 +850,7 @@ int main(){
                   }
               }
 
-
-              for (int x = 0; x < width2; x++){
-                  for (int y = 0; y < height2; y++){
-                      int red = 0;
-                      int green = 0;
-                      int blue = 0;
-                      int count = 0;
-                      for(int a = 0; a < alias; a++){
-                          for(int b = 0; b < alias; b++){
-                              count++;
-                              int x0 = alias * x + a;
-                              int y0 = alias * y + b;
-                              red += image[y0 * 4 * height + x0 * 4 + 0]; 
-                              green += image[y0 * 4 * height + x0 * 4 + 1]; 
-                              blue += image[y0 * 4 * height + x0 * 4 + 2]; 
-                          }
-                      }
-                      red /= count;
-                      blue /= count;
-                      green /= count;
-
-                      out_image[y * 4 * height2 + x * 4 + 0] = red; 
-                      out_image[y * 4 * height2 + x * 4 + 1] = green; 
-                      out_image[y * 4 * height2 + x * 4 + 2] = blue; 
-                      out_image[y * 4 * height2 + x * 4 + 3] = 255; 
-                  }
-              }
-
-              encodeOneStep((const char*)filename.data(), out_image, width2, height2);
+              encodeOneStep((const char*)filename.data(), image, width2, height2);
           }
 
 	  }
