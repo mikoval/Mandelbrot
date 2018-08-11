@@ -9,16 +9,16 @@
 
 using namespace std;
 
-#define MAX_FRAMES 5000
+#define MAX_FRAMES 20000
 #define KEY_SIZE 10
-#define START 2250
+#define START 0
 
-int width2 = 1000, height2 = 1000;
+int width2 = 2000, height2 = 2000;
 int alias = 1;
 int mult = 3;
 
 int width = width2 * alias, height = height2 * alias;
-int max_threads = 5;
+int max_threads = 10;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -32,6 +32,7 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
 }
 
 void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  int count ){
+        mpf_set_default_prec(100 + (int)((float)count / 10.0));
 	int start = (int)(  ((float)i / (float)max_threads) * (float)height);
 	int end = (int)(((float)(i+1) / (float)max_threads) * (float)height);
 
@@ -54,7 +55,6 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
         long double red = 0;
         long double green = 0;
         long double blue = 0;
-        mpf_set_default_prec(30 + (int)((float)count / 10.0));
         mpf_t mpf_x0;
         mpf_t mpf_y0;
         mpf_t mpf_xstart;
@@ -185,7 +185,7 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
                 double i;
         
                 
-                float max_itr =(80 + (0.0000015 * pow((float)count, 2.51)));
+                float max_itr = (80 + (0.00000185 * pow((float)count, 2.51)));
                 float skip = 0.0;// pow(count/100.0, 2.0);
                 float sum = 0.0, sum2 = 0.0;
                 
@@ -290,7 +290,7 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
                
                 
                 
-                double  v = 1.0 * pow(1.5 + count/1300.0, 4.0);
+                double  v = 1.0 * pow(1.5 + count/500.0, 4.0);
                 
              
                 
@@ -388,6 +388,7 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
 }
 
 void newCoord(double *ret, double x, double y, double mag, double mag2){
+	/*
     double sx = 0.360240443437;
     double sy = -0.64131306106480317;
 
@@ -396,20 +397,118 @@ void newCoord(double *ret, double x, double y, double mag, double mag2){
 
     double ox = 0.25 * width * (cx - sx) / mag2 + 0.5 * width;
     double oy = 0.25 * height * (cy - sy) / mag2 + 0.5 * height;
+    	*/
 
+        mpf_t mpf_x0;
+        mpf_t mpf_y0;
+        mpf_t mpf_xstart;
+        mpf_t mpf_ystart;
+        mpf_t mpf_tmp_x0;
+        mpf_t mpf_tmp_y0;
+        mpf_t mpf_tmp_x1;
+        mpf_t mpf_tmp_y1;
+        mpf_t mpf_tmp_x2;
+        mpf_t mpf_tmp_y2;
+        mpf_t mpf_tmp_x3;
+        mpf_t mpf_tmp_y3;
+        mpf_t mpf_tmp_x4;
+        mpf_t mpf_tmp_y4;
+
+        mpf_init (mpf_x0);           
+        mpf_init (mpf_y0);
+        mpf_init (mpf_xstart);           
+        mpf_init (mpf_ystart);
+        mpf_init (mpf_tmp_x0);           
+        mpf_init (mpf_tmp_y0);
+        mpf_init (mpf_tmp_x1);           
+        mpf_init (mpf_tmp_y1);
+        mpf_init (mpf_tmp_x2);           
+        mpf_init (mpf_tmp_y2);
+        mpf_init (mpf_tmp_x3);           
+        mpf_init (mpf_tmp_y3);
+        mpf_init (mpf_tmp_x4);
+        mpf_init (mpf_tmp_y4);
+	//
+    ////////////////////
+        mpf_set_str(mpf_xstart,"0.360240443437614363236125244449545308482607807958585750488375814740195346059218100311752936722773426396233731729724987737320035372683285317664532401218521579554288661726564324134702299962817029213329980895208036363104546639698106204384566555001322985619004717862781192694046362748742863016467354574422779443226982622356594130430232458472420816652623492974891730419252651127672782407292315574480207005828774566475024380960675386215814315654794021855269375824443853463117354448779647099224311848192893972572398662626725254769950976527431277402440752868498588785436705371093442460696090720654908973712759963732914849861213100695402602927267843779747314419332179148608587129105289166676461292845685734536033692577618496925170576714796693411776794742904333484665301628662532967079174729170714156810530598764525260869731233845987202037712637770582084286587072766838497865108477149114659838883818795374195150936369987302574377608649625020864292915913378927790344097552591919409137354459097560040374880346637533711271919419723135538377394364882968994646845930838049998854075817859391340445151448381853615103761584177161812057928",10);
+        mpf_set_str(mpf_ystart,"-0.6413130610648031748603750151793020665794949522823052595561775430644485741727536902556370230689681162370740565537072149790106973211105273740851993394803287437606238596262287731075999483940467161288840614581091294325709988992269165007394305732683208318834672366947550710920088501655704252385244481168836426277052232593412981472237968353661477793530336607247738951625817755401065045362273039788332245567345061665756708689359294516668271440525273653083717877701237756144214394870245598590883973716531691124286669552803640414068523325276808909040317617092683826521501539932397262012011082098721944643118695001226048977430038509470101715555439047884752058334804891389685530946112621573416582482926221804767466258346014417934356149837352092608891639072745930639364693513216719114523328990690069588676087923656657656023794484324797546024248328156586471662631008741349069961493817600100133439721557969263221185095951241491408756751582471307537382827924073746760884081704887902040036056611401378785952452105099242499241003208013460878442953408648178692353788153787229940221611731034405203519945313911627314900851851072122990492499999999999999999991",10);
+                mpf_set_d(mpf_tmp_x0, 4.0 * (((long double)x / (long double)width) - 0.5));
+                mpf_set_d(mpf_tmp_y0, 4.0 * (((long double)y / (long double)height) - 0.5));
+                mpf_set_d(mpf_tmp_x1, mag );
+                mpf_set_d(mpf_tmp_y1, mag );
+                mpf_set_d(mpf_tmp_x2, 0.25 * width);
+                mpf_set_d(mpf_tmp_y2, 0.25 * height);
+                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_x4, 0.5 * width);
+                mpf_set_d(mpf_tmp_y4, 0.5 * height);
+
+	{
+
+
+                mpf_mul(mpf_tmp_x0, mpf_tmp_x0, mpf_tmp_x1);
+                mpf_mul(mpf_tmp_y0, mpf_tmp_y0, mpf_tmp_y1);
+
+                mpf_add(mpf_x0, mpf_tmp_x0, mpf_xstart);
+                mpf_add(mpf_y0, mpf_tmp_y0, mpf_ystart);
+
+                mpf_sub(mpf_x0, mpf_x0, mpf_xstart);
+                mpf_sub(mpf_y0, mpf_y0, mpf_ystart);
+
+                mpf_mul(mpf_x0, mpf_tmp_x2, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y2, mpf_y0);
+
+
+                mpf_mul(mpf_x0, mpf_tmp_x3, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y3, mpf_y0);
+
+
+                mpf_add(mpf_x0, mpf_tmp_x4, mpf_x0);
+                mpf_add(mpf_y0, mpf_tmp_y4, mpf_y0);
+
+	}
+	double ox = mpf_get_d(mpf_x0);
+	double oy = mpf_get_d(mpf_y0);
     ret[0] = ox;
     ret[1] = oy;
 
 }
 
 int main(){
-	  //NOTE: this sample will overwrite the file or test.png without warning!
-	  
+		mpf_set_default_prec(300);
+		mpf_t mpf_x0;
+		mpf_t mpf_y0;
+		mpf_t mpf_xstart;
+		mpf_t mpf_ystart;
+		mpf_t mpf_tmp_x0;
+		mpf_t mpf_tmp_y0;
+		mpf_t mpf_tmp_x1;
+		mpf_t mpf_tmp_y1;
+		mpf_t mpf_tmp_x2;
+		mpf_t mpf_tmp_y2;
+		mpf_t mpf_tmp_x3;
+		mpf_t mpf_tmp_y3;
+		mpf_t mpf_tmp_x4;
+		mpf_t mpf_tmp_y4;
 
-	  //generate some image
-	  
-
-
+		mpf_init (mpf_x0);           
+		mpf_init (mpf_y0);
+		mpf_init (mpf_xstart);           
+		mpf_init (mpf_ystart);
+		mpf_init (mpf_tmp_x0);           
+		mpf_init (mpf_tmp_y0);
+		mpf_init (mpf_tmp_x1);           
+		mpf_init (mpf_tmp_y1);
+		mpf_init (mpf_tmp_x2);           
+		mpf_init (mpf_tmp_y2);
+		mpf_init (mpf_tmp_x3);           
+		mpf_init (mpf_tmp_y3);
+		mpf_init (mpf_tmp_x4);
+		mpf_init (mpf_tmp_y4);
+		//
+	    ////////////////////
+		mpf_set_str(mpf_xstart,"0.360240443437614363236125244449545308482607807958585750488375814740195346059218100311752936722773426396233731729724987737320035372683285317664532401218521579554288661726564324134702299962817029213329980895208036363104546639698106204384566555001322985619004717862781192694046362748742863016467354574422779443226982622356594130430232458472420816652623492974891730419252651127672782407292315574480207005828774566475024380960675386215814315654794021855269375824443853463117354448779647099224311848192893972572398662626725254769950976527431277402440752868498588785436705371093442460696090720654908973712759963732914849861213100695402602927267843779747314419332179148608587129105289166676461292845685734536033692577618496925170576714796693411776794742904333484665301628662532967079174729170714156810530598764525260869731233845987202037712637770582084286587072766838497865108477149114659838883818795374195150936369987302574377608649625020864292915913378927790344097552591919409137354459097560040374880346637533711271919419723135538377394364882968994646845930838049998854075817859391340445151448381853615103761584177161812057928",10);
+		mpf_set_str(mpf_ystart,"-0.6413130610648031748603750151793020665794949522823052595561775430644485741727536902556370230689681162370740565537072149790106973211105273740851993394803287437606238596262287731075999483940467161288840614581091294325709988992269165007394305732683208318834672366947550710920088501655704252385244481168836426277052232593412981472237968353661477793530336607247738951625817755401065045362273039788332245567345061665756708689359294516668271440525273653083717877701237756144214394870245598590883973716531691124286669552803640414068523325276808909040317617092683826521501539932397262012011082098721944643118695001226048977430038509470101715555439047884752058334804891389685530946112621573416582482926221804767466258346014417934356149837352092608891639072745930639364693513216719114523328990690069588676087923656657656023794484324797546024248328156586471662631008741349069961493817600100133439721557969263221185095951241491408756751582471307537382827924073746760884081704887902040036056611401378785952452105099242499241003208013460878442953408648178692353788153787229940221611731034405203519945313911627314900851851072122990492499999999999999999991",10);
 	  std::vector<double> image1;
 	  image1.resize(width * height * 4);
 	  
@@ -459,23 +558,52 @@ int main(){
 
               cout << mag / mag2 << endl;
 
+                mpf_set_d(mpf_tmp_x1, mag );
+                mpf_set_d(mpf_tmp_y1, mag );
+                mpf_set_d(mpf_tmp_x2, 0.25 * width);
+                mpf_set_d(mpf_tmp_y2, 0.25 * height);
+                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_x4, 0.5 * width);
+                mpf_set_d(mpf_tmp_y4, 0.5 * height);
               for (int x = 0; x < width; x++){
                   for (int y = 0; y < height; y++){
                       //cout << "INDEX: " << x << ", " << y << endl;
 
+                mpf_set_d(mpf_tmp_x0, 4.0 * (((long double)x / (long double)width) - 0.5));
+                mpf_set_d(mpf_tmp_y0, 4.0 * (((long double)y / (long double)height) - 0.5));
                       double red = 0;
                       double green = 0;
                       double blue = 0;
 
                         
+	{
 
 
-                        double arr[2];
+                mpf_mul(mpf_tmp_x0, mpf_tmp_x0, mpf_tmp_x1);
+                mpf_mul(mpf_tmp_y0, mpf_tmp_y0, mpf_tmp_y1);
 
-                        newCoord(arr, x, y, mag, mag2);
+                mpf_add(mpf_x0, mpf_tmp_x0, mpf_xstart);
+                mpf_add(mpf_y0, mpf_tmp_y0, mpf_ystart);
 
-                        double ox = arr[0];
-                        double oy = arr[1];
+                mpf_sub(mpf_x0, mpf_x0, mpf_xstart);
+                mpf_sub(mpf_y0, mpf_y0, mpf_ystart);
+
+                mpf_mul(mpf_x0, mpf_tmp_x2, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y2, mpf_y0);
+
+
+                mpf_mul(mpf_x0, mpf_tmp_x3, mpf_x0);
+                mpf_mul(mpf_y0, mpf_tmp_y3, mpf_y0);
+
+
+                mpf_add(mpf_x0, mpf_tmp_x4, mpf_x0);
+                mpf_add(mpf_y0, mpf_tmp_y4, mpf_y0);
+
+	}
+	double ox = mpf_get_d(mpf_x0);
+	double oy = mpf_get_d(mpf_y0);
+
 
                         double xfract = ox - floor(ox);
                         double yfract = oy - floor(oy);
@@ -553,7 +681,7 @@ int main(){
                         r = r * v;
 
                         
-                        r = 0.5 + 0.5 * sin(1.0 * r + count / 100.0);
+                        r = 0.5 + 0.5 * sin(1.0 * r + count / 200.0);
                         
                    
                         
@@ -568,7 +696,7 @@ int main(){
 
                 ///////////////
                 ///
-                            float max_itr =(80 + (0.0000015 * pow((float)count, 2.51)));
+                            float max_itr =(80 + (0.00000185 * pow((float)count, 2.51)));
                             float reds[] =
                             {   0.5 + 0.5 * sin( 3.0 +  theta  + (i0)/ 40.0  + (count)/ 280.0),
                                 0.0,
