@@ -10,7 +10,7 @@
 using namespace std;
 
 #define MAX_FRAMES 20000
-#define KEY_SIZE 30
+#define KEY_SIZE 500
 #define START 0
 
 int width2 = 1000, height2 = 1000;
@@ -556,16 +556,14 @@ int main(){
 	      count2 /= 2.0;
 	      count3 /= 2.0;
               double mag = pow( 0.5, count / 60.0 );
-              double mag2 = pow( 0.5, count3 / 60.0 );
-              double mag3 = pow( 0.5, count2 / 60.0 );
+              double mag2 = pow( 0.5, count2 / 60.0 );
+              double mag3 = pow( 0.5, count3 / 60.0 );
 
 
                 mpf_set_d(mpf_tmp_x1, mag );
                 mpf_set_d(mpf_tmp_y1, mag );
                 mpf_set_d(mpf_tmp_x2, 0.25 * width);
                 mpf_set_d(mpf_tmp_y2, 0.25 * height);
-                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
-                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
                 mpf_set_d(mpf_tmp_x4, 0.5 * width);
                 mpf_set_d(mpf_tmp_y4, 0.5 * height);
               for (int x = 0; x < width; x++){
@@ -581,6 +579,8 @@ int main(){
 	{
 
 
+                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
+                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
                 mpf_mul(mpf_tmp_x0, mpf_tmp_x0, mpf_tmp_x1);
                 mpf_mul(mpf_tmp_y0, mpf_tmp_y0, mpf_tmp_y1);
 
@@ -606,6 +606,7 @@ int main(){
     double oy = mpf_get_d(mpf_y0);
                 mpf_set_d(mpf_tmp_x3, 1.0 / mag3);
                 mpf_set_d(mpf_tmp_y3, 1.0 / mag3);
+
 
                 mpf_set_d(mpf_tmp_x0, 4.0 * (((long double)x / (long double)width) - 0.5));
                 mpf_set_d(mpf_tmp_y0, 4.0 * (((long double)y / (long double)height) - 0.5));
@@ -638,6 +639,7 @@ int main(){
 	double oy2 = mpf_get_d(mpf_y0);
 
 
+
                         double xfract = ox - floor(ox);
                         double yfract = oy - floor(oy);
                         xfract = 1.0 - xfract;
@@ -650,19 +652,23 @@ int main(){
 
                         std::vector<double> *iptr = &image1;
 
+                        bool skip = false;
+                        double i0 = 0.0;
+                        double r = 0.0;
+                        double i0_tmp = 0.0;
+                        double r_tmp = 0.0;
                         if(xind < 0 || xind >= width ||
                            xind2 < 0 || xind2 >= width || 
                            yind < 0 || yind >= height || 
                            yind2 < 0 || yind2 >= height) {
 
-                                continue;
+                            skip = true;
                         }
 
 
 
+			        if(!skip){
 
-
-			
                         float r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
                         float r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
                         float r3 = (*iptr)[yind2 * 4 * height + xind * 4 + 0];
@@ -698,9 +704,10 @@ int main(){
                       //
                       //
 
-                          double i0 =  red3; 
-                          double r = green3; 
+                          i0 =  red3; 
+                          r = green3; 
                           blue = blue3;
+                    }
                                 /////////////////////////////////////////////////////////////////////
 
                         xfract = ox2 - floor(ox2);
@@ -708,45 +715,48 @@ int main(){
                         xfract = 1.0 - xfract;
                         yfract = 1.0 - yfract;
 
-                        xind = (int) ox;
-                        yind = (int) oy;
-                        xind2 = (int) ox + 1;
-                        yind2 = (int) oy  + 1;
+                        xind = (int) ox2;
+                        yind = (int) oy2;
+                        xind2 = (int) ox2 + 1;
+                        yind2 = (int) oy2  + 1;
 
+
+                        //`cout << xind2 << ", " << yind2 <<  endl;
+                        
 
                         iptr = &image2;
                 
-                        r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
-                        r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
-                        r3 = (*iptr)[yind2 * 4 * height + xind * 4 + 0];
-                        r4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 0];
-                        red1 = r1 * xfract + r2 * (1.0 - xfract);
-                        red2 = r3 * xfract + r4 * (1.0 - xfract);
-                        red3 = red1 * yfract + red2 * (1.0 - yfract);
+                        float r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
+                        float r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
+                        float r3 = (*iptr)[yind2 * 4 * height + xind * 4 + 0];
+                       float  r4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 0];
+                        float red1 = r1 * xfract + r2 * (1.0 - xfract);
+                        float red2 = r3 * xfract + r4 * (1.0 - xfract);
+                        float red3 = red1 * yfract + red2 * (1.0 - yfract);
                         if(r1 < 0 || r2 < 0 || r3 < 0 || r4 < 0){
                             red3 = -1.0;
                         }
 
-                        g1 = (*iptr)[yind * 4 * height + xind * 4 + 1];
-                        g2 = (*iptr)[yind * 4 * height + xind2 * 4 + 1];
-                        g3 = (*iptr)[yind2 * 4 * height + xind * 4 + 1];
-                        g4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 1];
-                        green1 = g1 * xfract + g2 * (1.0 - xfract);
-                        green2 = g3 * xfract + g4 * (1.0 - xfract);
-                        green3 = green1 * yfract + green2 * (1.0 - yfract);
+                        float g1 = (*iptr)[yind * 4 * height + xind * 4 + 1];
+                        float g2 = (*iptr)[yind * 4 * height + xind2 * 4 + 1];
+                        float g3 = (*iptr)[yind2 * 4 * height + xind * 4 + 1];
+                        float g4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 1];
+                        float green1 = g1 * xfract + g2 * (1.0 - xfract);
+                        float green2 = g3 * xfract + g4 * (1.0 - xfract);
+                        float green3 = green1 * yfract + green2 * (1.0 - yfract);
 
-                        b1 = (*iptr)[yind * 4 * height + xind * 4 + 2];
-                        b2 = (*iptr)[yind * 4 * height + xind2 * 4 + 2];
-                        b3 = (*iptr)[yind2 * 4 * height + xind * 4 + 2];
-                        b4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 2];
-                        blue1 = b1 * xfract + b2 * (1.0 - xfract);
-                        blue2 = b3 * xfract + b4 * (1.0 - xfract);
-                        blue3 = blue1 * yfract + blue2 * (1.0 - yfract);
+                        float b1 = (*iptr)[yind * 4 * height + xind * 4 + 2];
+                        float b2 = (*iptr)[yind * 4 * height + xind2 * 4 + 2];
+                        float b3 = (*iptr)[yind2 * 4 * height + xind * 4 + 2];
+                        float b4 = (*iptr)[yind2 * 4 * height + xind2 * 4 + 2];
+                        float blue1 = b1 * xfract + b2 * (1.0 - xfract);
+                       float  blue2 = b3 * xfract + b4 * (1.0 - xfract);
+                        float blue3 = blue1 * yfract + blue2 * (1.0 - yfract);
 
 
 
-                          double i0_tmp =  red3; 
-                          double r_tmp = green3; 
+                          i0_tmp =  red3; 
+                          r_tmp = green3; 
                           blue = blue3;
 
 
@@ -757,11 +767,25 @@ int main(){
 
                                 
                         }
-			else {
+                          double l = (double) i / (double) KEY_SIZE;
+
+                          //l = 0.0;
+
+                         if(r != r){
+                            i0 = i0_tmp;
+                            r = r_tmp;
+                         } else if (r_tmp != r_tmp){
+
+                         }else {
+                             
+                             i0 = i0 * l + i0_tmp * (1.0 - l);
+                             r = r * l + r_tmp * (1.0 - l);
+                         }
+                             
                           //i0 = i0_tmp;
                           //r = r_tmp;
+
 			
-			}
 
 			  
 			  ///////////////////////////////////////////////////////////////////////
