@@ -10,10 +10,10 @@
 using namespace std;
 
 #define MAX_FRAMES 20000
-#define KEY_SIZE 100
+#define KEY_SIZE 30
 #define START 0
 
-int width2 = 500, height2 = 500;
+int width2 = 1000, height2 = 1000;
 int alias = 1;
 int mult = 3;
 
@@ -543,7 +543,7 @@ int main(){
             continue;
           }
 
-          for(int i = 0; i < KEY_SIZE; i += KEY_SIZE - 1){
+          for(int i = 0; i < KEY_SIZE; i++){
               int iterations = i + (j - KEY_SIZE);
               string filename = "pictures/scene"  + to_string(iterations) + ".png";
 
@@ -714,13 +714,6 @@ int main(){
                         yind2 = (int) oy  + 1;
 
 
-                        if(xind < 0 || xind >= width ||
-                           xind2 < 0 || xind2 >= width || 
-                           yind < 0 || yind >= height || 
-                           yind2 < 0 || yind2 >= height) {
-
-                                continue;
-                        }
                         iptr = &image2;
                 
                         r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
@@ -757,8 +750,18 @@ int main(){
                           blue = blue3;
 
 
-                          i0 = i0_tmp;
-                          r = r_tmp;
+                        if(xind < 0 || xind >= width ||
+                           xind2 < 0 || xind2 >= width || 
+                           yind < 0 || yind >= height || 
+                           yind2 < 0 || yind2 >= height) {
+
+                                
+                        }
+			else {
+                          //i0 = i0_tmp;
+                          //r = r_tmp;
+			
+			}
 
 			  
 			  ///////////////////////////////////////////////////////////////////////
