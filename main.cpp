@@ -10,10 +10,10 @@
 using namespace std;
 
 #define MAX_FRAMES 20000
-#define KEY_SIZE 30
+#define KEY_SIZE 100
 #define START 0
 
-int width2 = 2000, height2 = 2000;
+int width2 = 500, height2 = 500;
 int alias = 1;
 int mult = 3;
 
@@ -513,6 +513,8 @@ int main(){
 	  image1.resize(width * height * 4);
 	  
 
+      std::vector<double> image2;
+      image2.resize(width * height * 4);
 
       	  std::vector<unsigned char> image;
       	  image.resize(width * height * 4);
@@ -524,9 +526,9 @@ int main(){
 	  for(int j = START; j < MAX_FRAMES; j += KEY_SIZE){
 
 
-//          std::vector<unsigned char> tmp = image2;
-//          image2 = image1;
-//          image1 = tmp;
+          std::vector<double> tmp = image2;
+          image2 = image1;
+          image1 = tmp;
 
 
 		  for (int i=0; i<max_threads; i++){
@@ -541,7 +543,7 @@ int main(){
             continue;
           }
 
-          for(int i = 0; i < KEY_SIZE; i++){
+          for(int i = 0; i < KEY_SIZE; i += KEY_SIZE - 1){
               int iterations = i + (j - KEY_SIZE);
               string filename = "pictures/scene"  + to_string(iterations) + ".png";
 
@@ -555,7 +557,7 @@ int main(){
 	      count3 /= 2.0;
               double mag = pow( 0.5, count / 60.0 );
               double mag2 = pow( 0.5, count3 / 60.0 );
-              double mag3 = pow( 0.5, count3 / 60.0 );
+              double mag3 = pow( 0.5, count2 / 60.0 );
 
 
                 mpf_set_d(mpf_tmp_x1, mag );
@@ -600,17 +602,13 @@ int main(){
                 mpf_add(mpf_y0, mpf_tmp_y4, mpf_y0);
 
 	}
-                mpf_set_d(mpf_tmp_x3, 1.0 / mag2);
-                mpf_set_d(mpf_tmp_y3, 1.0 / mag2);
-              for (int x = 0; x < width; x++){
-                  for (int y = 0; y < height; y++){
-                      //cout << "INDEX: " << x << ", " << y << endl;
+    double ox = mpf_get_d(mpf_x0);
+    double oy = mpf_get_d(mpf_y0);
+                mpf_set_d(mpf_tmp_x3, 1.0 / mag3);
+                mpf_set_d(mpf_tmp_y3, 1.0 / mag3);
 
                 mpf_set_d(mpf_tmp_x0, 4.0 * (((long double)x / (long double)width) - 0.5));
                 mpf_set_d(mpf_tmp_y0, 4.0 * (((long double)y / (long double)height) - 0.5));
-                      double red = 0;
-                      double green = 0;
-                      double blue = 0;
                         
 	{
 
@@ -660,25 +658,6 @@ int main(){
                                 continue;
                         }
 
-                        double xfract2 = ox2 - floor(ox2);
-                        double yfract2 = oy2 - floor(oy2);
-                        x2fract = 1.0 - x2fract;
-                        y2fract = 1.0 - y2fract;
-
-                        int x2ind = (int) ox;
-                        int y2ind = (int) oy;
-                        int x2ind2 = (int) ox + 1;
-                        int y2ind2 = (int) oy  + 1;
-
-			/////////////////////////////////////////////////////////////////////
-
-                        if(xind < 0 || xind >= width ||
-                           xind2 < 0 || xind2 >= width || 
-                           yind < 0 || yind >= height || 
-                           yind2 < 0 || yind2 >= height) {
-
-                                continue;
-                        }
 
 
 
@@ -722,9 +701,27 @@ int main(){
                           double i0 =  red3; 
                           double r = green3; 
                           blue = blue3;
+                                /////////////////////////////////////////////////////////////////////
+
+                        xfract = ox2 - floor(ox2);
+                        yfract = oy2 - floor(oy2);
+                        xfract = 1.0 - xfract;
+                        yfract = 1.0 - yfract;
+
+                        xind = (int) ox;
+                        yind = (int) oy;
+                        xind2 = (int) ox + 1;
+                        yind2 = (int) oy  + 1;
 
 
-                        std::vector<double> *iptr = &image1;
+                        if(xind < 0 || xind >= width ||
+                           xind2 < 0 || xind2 >= width || 
+                           yind < 0 || yind >= height || 
+                           yind2 < 0 || yind2 >= height) {
+
+                                continue;
+                        }
+                        iptr = &image2;
                 
                         r1 = (*iptr)[yind * 4 * height + xind * 4 + 0];
                         r2 = (*iptr)[yind * 4 * height + xind2 * 4 + 0];
@@ -755,9 +752,13 @@ int main(){
 
 
 
-                          double i02 =  red3; 
-                          double r2 = green3; 
+                          double i0_tmp =  red3; 
+                          double r_tmp = green3; 
                           blue = blue3;
+
+
+                          i0 = i0_tmp;
+                          r = r_tmp;
 
 			  
 			  ///////////////////////////////////////////////////////////////////////
