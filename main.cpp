@@ -13,7 +13,7 @@ using namespace std;
 #define KEY_SIZE 100
 #define START 0
 
-int width2 = 1000, height2 = 1000;
+int width2 = 2000, height2 = 2000;
 int alias = 1;
 int mult = 3;
 
@@ -185,7 +185,7 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
                 double i;
         
                 
-                float max_itr = (80 + (0.00000185 * pow((float)count, 2.51)));
+                float max_itr = (300 + (0.0000185 * pow((float)count, 2.51)));
                 float skip = 0.0;// pow(count/100.0, 2.0);
                 float sum = 0.0, sum2 = 0.0;
                 
@@ -361,22 +361,8 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
 
           
     
-                if(i >= max_itr - 1){
-                    red = 0;
-                    green = 0;
-                    blue = 0;
-                    i = 0.0;
-                }
-                red = red ;
-                green = green ;
-                blue = blue;
-                
-
-                
-
-                if(r != r){
-                    i = 0;
-
+                if(r0 != r0){
+			r0 = 0;
                 }
             (*image)[y*4*height + x*4 + 0] = i;//(int) (255.0 * red);
             (*image)[y*4*height + x*4 + 1] = r0;//(int) (255.0 * green);
@@ -538,16 +524,18 @@ int main(){
           for (int i=0; i<max_threads; i++){
               myThreads[i].join();
           }
-
-          if(j == 0){
+		static bool s = false;
+          if(s == false){
+		  s = true;
             continue;
           }
 
-          for(int i = 0; i < KEY_SIZE; i++){
-              int iterations = i + (j - KEY_SIZE);
-              string filename = "pictures/scene"  + to_string(iterations) + ".png";
+          for(double i = .5; i < KEY_SIZE; i++){
+              double iterations = i + (double)(j - KEY_SIZE);
+              string filename = "pictures/scene"  + to_string((int)iterations) + ".png";
 
 
+	      cout << iterations << endl;
 
               double count = iterations;
           count /= 2.0;
@@ -772,17 +760,25 @@ int main(){
                           //l = 0.0;
 
                          if(i0 == -1.0 ){
-                             i0 = i0_tmp;
-                             r = r_tmp;
-                             if (i0 == -1.0 || i0 == 0.0 || r != r){
-                                i0 = 0;
-                                r = 0;
-                             }
-                         } else if(i0 == 0.0 || r != r){
-                            i0 = 0;
-                            r = 0;
-                         }
-                         else if (i0_tmp == -1.0 || i0_tmp == 0.0 || r_tmp != r_tmp){
+		 		i0 = i0_tmp;
+				r = r_tmp;
+				/*
+				  image[y * 4 * height2 + x * 4 + 0] = 255; 
+				  image[y * 4 * height2 + x * 4 + 1] = 0; 
+				  image[y * 4 * height2 + x * 4 + 2] = 0; 
+				  image[y * 4 * height2 + x * 4 + 3] = 255; 
+				  continue;
+				  */
+			 }
+                         
+                         else if (i0_tmp == -1.0){
+				 /*
+				  image[y * 4 * height2 + x * 4 + 0] = 0; 
+				  image[y * 4 * height2 + x * 4 + 1] = 255; 
+				  image[y * 4 * height2 + x * 4 + 2] = 0; 
+				  image[y * 4 * height2 + x * 4 + 3] = 255; 
+				  continue;
+				  */
                              
 
                          }else {
@@ -826,7 +822,7 @@ int main(){
 
                 ///////////////
                 ///
-                            float max_itr =(80 + (0.00000185 * pow((float)count, 2.51)));
+                            float max_itr =(80 + (0.000018 * pow((float)count, 2.25)));
                             float reds[] =
                             {   0.5 + 0.5 * sin( 3.0 +  theta  + (i0)/ 40.0  + (count)/ 280.0),
                                 0.0,
