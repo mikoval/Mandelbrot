@@ -11,7 +11,7 @@ using namespace std;
 
 #define MAX_FRAMES 20000
 #define KEY_SIZE 100
-#define START 0
+#define START 12300
 
 int width2 = 2000, height2 = 2000;
 int alias = 1;
