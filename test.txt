@@ -1,0 +1,1 @@
+clang++ -std=c++11  main.cpp lodepng.cpp -Wno-c++11-narrowing -lgmp
