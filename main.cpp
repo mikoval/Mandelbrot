@@ -11,14 +11,14 @@ using namespace std;
 
 #define MAX_FRAMES 20000
 #define KEY_SIZE 100
-#define START 0
+#define START 1300
 
-int width2 = 500, height2 = 500;
+int width2 = 1000, height2 = 1000;
 int alias = 1;
 int mult = 3;
 
 int width = width2 * alias, height = height2 * alias;
-int max_threads = 5;
+int max_threads = 10;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -39,6 +39,7 @@ mpf_t mpf_tmp_x4;
 mpf_t mpf_tmp_y4;
 
 void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, std::vector<double> &image3, float ITR_PARENT, float ITR, float MAX) {
+	cout << "INTERPOLATING" << endl;
 	double count = ITR + (ITR_PARENT - KEY_SIZE);
 	count /= 2.0;
 	double count2 = ITR_PARENT;
@@ -260,6 +261,8 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
 			double l = (double) ITR / (double) KEY_SIZE;
 			//l = 0.0;
 
+			
+			
 			if(i0 == -1.0 ){
 				i0 = i0_tmp;
 				r = r_tmp;
@@ -273,8 +276,8 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
                  i0 = i0 * l + i0_tmp * (1.0 - l);
                  r = r * l + r_tmp * (1.0 - l);
             }
+            
                  
-
 			image3[y * 4 * height2 + x * 4 + 0] = i0; 
 			image3[y * 4 * height2 + x * 4 + 1] = r; 
 			image3[y * 4 * height2 + x * 4 + 2] = 0; 
@@ -290,6 +293,8 @@ float computeAvg(std::vector<double> &image){
         for (int y = 0; y < height; y++){
         	double i0 = image[y * 4 * height2 + x * 4 + 0];
         	double r = image[y * 4 * height2 + x * 4 + 1];
+
+
         	if(i0 != -1 && i0 == i0){
         		total_i += i0;
         		count++;
@@ -304,12 +309,17 @@ float computeAvg(std::vector<double> &image){
 }
 
 void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &image_out, double avg, double count){
-
+	cout << "COMPUTING" << endl;
 	count = count;
+	float max_itr =(80 + (0.000018 * pow((float)count, 2.25)));
+	cout << "count : " << count << ", " <<  max_itr << endl;;
     for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
         	double i0 = image_in[y * 4 * height2 + x * 4 + 0];
         	double r = image_in[y * 4 * height2 + x * 4 + 1];
+
+
+
 
         	float red = 0;
         	float green = 0; 
@@ -342,7 +352,7 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 			  
 
 	
-		        float max_itr =(80 + (0.000018 * pow((float)count, 2.25)));
+		        
 		        float reds[] =
 		        {   0.5 + 0.5 * sin( 3.0 +  theta  + (i0)/ 40.0  + (count)/ 280.0),
 		            0.0,
@@ -371,12 +381,16 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 		        red = r1x + (r2x - r1x) * frac;
 		        green = g1x + (g2x - g1x) * frac;
 		        blue = b1x + (b2x - b1x) * frac;
+
+
 		    
 		        if(i0 <= 0.0 || i0 > max_itr - 0.0){
 		            red = 0;
 		            green = 0;
 		            blue = 0;
 		        }
+
+
 		        
 			}             
 
@@ -385,12 +399,17 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 			  green = green * 255;
 			  blue = blue * 255;
 
+/*
 			  if(i0 > 2.0 *  avg){
 			  	red = 0;
 			  	green = 0;
 			  	blue = 0;
 
 			  }
+			  */
+
+
+			
             image_out[y * 4 * height2 + x * 4 + 0] = red; 
             image_out[y * 4 * height2 + x * 4 + 1] = green; 
             image_out[y * 4 * height2 + x * 4 + 2] = blue; 
@@ -410,6 +429,11 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
 }
 
 void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  double count ){
+
+	            float max_itr =(80 + (0.000018 * pow((float)count + 100, 2.25)));
+
+	            cout << max_itr << endl;
+
     mpf_set_default_prec(100 + (int)((float)count / 10.0));
     int start = (int)(  ((float)i / (float)max_threads) * (float)height);
     int end = (int)(((float)(i+1) / (float)max_threads) * (float)height);
@@ -563,7 +587,6 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
             double i;
 
 
-            float max_itr =(80 + (0.000018 * pow((float)count + 100, 2.25)));
             float skip = 0.0;// pow(count/100.0, 2.0);
             float sum = 0.0, sum2 = 0.0;
 
@@ -742,6 +765,7 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
             if(r0 != r0){
                 r0 = 0;
             }
+
             (*image)[y*4*height + x*4 + 0] = i;//(int) (255.0 * red);
             (*image)[y*4*height + x*4 + 1] = r0;//(int) (255.0 * green);
             (*image)[y*4*height + x*4 + 2] = (int) (255.0 * blue);
@@ -903,7 +927,7 @@ int main(){
         }
 
         cout << "j: " <<  j << endl;
-        for(double i = .5; i < 1; i++){
+        for(double i = .5; i < KEY_SIZE; i++){
         	cout << "i: " <<  i << endl;
             double iterations = i + (double)(j - KEY_SIZE);
             string filename = "pictures/scene"  + to_string((int)iterations) + ".png";
@@ -915,7 +939,7 @@ int main(){
             float avg = computeAvg(image3);
 
             cout << "COMPUTING" << endl;
-            computeImage(image3, image, avg, iterations);
+            computeImage(image3, image, avg, iterations / 2.0);
 
             cout << "DONE" << endl;
 
