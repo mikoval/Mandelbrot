@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <gmp.h>
+#include <vector>
+#include <algorithm>
 
 
 #include "lodepng.h"
@@ -286,33 +288,36 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
   }
 }
 
-float computeAvg(std::vector<double> &image){
+float computeAvg(std::vector<double> &image, float count){
 	double total_i = 0;
-	double count = 0;
+	float max_itr =(80 + (0.000018 * pow((float)count * 2, 2.25)));
+	vector<double> arr;
 	for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
         	double i0 = image[y * 4 * height2 + x * 4 + 0];
         	double r = image[y * 4 * height2 + x * 4 + 1];
 
 
-        	if(i0 != -1 && i0 == i0){
+        	if(i0 != -1 && i0 == i0 && i0 <= count && i0 > 0){
+			arr.push_back(i0);
         		total_i += i0;
         		count++;
         	}
         	
         }
     }
-    double avg = total_i / count;
+	sort(arr.begin(), arr.end());
+	double val = arr[arr.size() * 0.8];
 
-    cout << avg << endl;
-    return avg;
+	return val;
+
 }
 
 void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &image_out, double avg, double count){
-	cout << "COMPUTING" << endl;
 	count = count;
-	float max_itr =(80 + (0.000018 * pow((float)count, 2.25)));
-	cout << "count : " << count << ", " <<  max_itr << endl;;
+	float max_itr =(80 + (0.000018 * pow((float)count * 2, 2.25)));
+	cout << "max itr compute : " << max_itr << endl;
+  cout << "AVG: " << avg  + 30 << endl;
     for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
         	double i0 = image_in[y * 4 * height2 + x * 4 + 0];
@@ -333,7 +338,7 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 			    
 			   
 			    float theta = 0.0;
-			    
+			   
 			    
 			    r = r * v;
 
@@ -399,14 +404,13 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 			  green = green * 255;
 			  blue = blue * 255;
 
-/*
-			  if(i0 > 2.0 *  avg){
+
+			  if(i0 >  avg + 30 ){
 			  	red = 0;
 			  	green = 0;
 			  	blue = 0;
 
 			  }
-			  */
 
 
 			
@@ -430,9 +434,8 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
 
 void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  double count ){
 
-	            float max_itr =(80 + (0.000018 * pow((float)count + 100, 2.25)));
+	            float max_itr =(80 + (0.000018 * pow((float)count * 2 + 100, 2.25)));
 
-	            cout << max_itr << endl;
 
     mpf_set_default_prec(100 + (int)((float)count / 10.0));
     int start = (int)(  ((float)i / (float)max_threads) * (float)height);
@@ -928,7 +931,6 @@ int main(){
 
         cout << "j: " <<  j << endl;
         for(double i = .5; i < KEY_SIZE; i++){
-        	cout << "i: " <<  i << endl;
             double iterations = i + (double)(j - KEY_SIZE);
             string filename = "pictures/scene"  + to_string((int)iterations) + ".png";
 
@@ -936,7 +938,7 @@ int main(){
             interpolateImage(image1, image2, image3, j, i, KEY_SIZE);
 
             cout << "AVG" << endl;
-            float avg = computeAvg(image3);
+            float avg = computeAvg(image3, iterations/ 2.0);
 
             cout << "COMPUTING" << endl;
             computeImage(image3, image, avg, iterations / 2.0);
