@@ -15,15 +15,15 @@ double R_TARGET = 0;
 using namespace std;
 
 #define MAX_FRAMES 50000
-#define KEY_SIZE 100
+#define KEY_SIZE 50
 #define START 0
 
-int width2 = 2000, height2 = 2000;
+int width2 = 1000, height2 = 1000;
 int alias = 1;
 int mult = 3;
 
 int width = width2 * alias, height = height2 * alias;
-int max_threads = 10;
+int max_threads = 5;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -45,11 +45,11 @@ mpf_t mpf_tmp_y4;
 
 void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, std::vector<double> &image3, float ITR_PARENT, float ITR, float MAX) {
 	double count = ITR + (ITR_PARENT - KEY_SIZE);
-	count /= 2.0;
+	//count *= 2.0;
 	double count2 = ITR_PARENT;
 	double count3 = ITR_PARENT - KEY_SIZE;
-	count2 /= 2.0;
-	count3 /= 2.0;
+	//count2 *= 2.0;
+	//count3 *= 2.0;
 	double mag = pow( 0.5, count / 60.0 );
 	double mag2 = pow( 0.5, count2 / 60.0 );
 	double mag3 = pow( 0.5, count3 / 60.0 );
@@ -267,13 +267,13 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
 
 			
 			
-			if(i0 == -1.0 ){
+			if(i0 == -1.0  || r != r){
 				i0 = i0_tmp;
 				r = r_tmp;
 
  			}
              
-            else if (i0_tmp == -1.0){
+            else if (i0_tmp == -1.0 || r_tmp != r_tmp){
 
             } else {
                  
@@ -281,7 +281,6 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
                  r = r * l + r_tmp * (1.0 - l);
             }
             
-                 
 			image3[y * 4 * height2 + x * 4 + 0] = i0; 
 			image3[y * 4 * height2 + x * 4 + 1] = r; 
 			image3[y * 4 * height2 + x * 4 + 2] = 0; 
@@ -292,7 +291,7 @@ void interpolateImage(std::vector<double> &image1, std::vector<double> &image2, 
 
 float computeAvg(std::vector<double> &image, float count){
 	double total_i = 0;
-	float max_itr =(1000 + (0.000058 * pow((float)count * 2, 2.25)));
+	float max_itr =(100 + (0.000058 * pow((float)count * 2, 2.25)));
 	vector<double> arr;
 	for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
@@ -300,7 +299,7 @@ float computeAvg(std::vector<double> &image, float count){
         	double r = image[y * 4 * height2 + x * 4 + 1];
 
 
-        	if(i0 != -1 && i0 == i0 && i0 <= max_itr && i0 > 0){
+        	if(i0 != -1 && i0 == i0 && i0 < max_itr && i0 > 0){
 			arr.push_back(i0);
         		total_i += i0;
         		count++;
@@ -317,7 +316,8 @@ float computeAvg(std::vector<double> &image, float count){
 
 void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &image_out, double avg, double count){
 	count = count;
-	float max_itr =(1000 + (0.000058 * pow((float)count * 2, 2.25)));
+	float max_itr =(100 + (0.000058 * pow((float)count * 2, 2.25)));
+	cout << "Max itr: " <<  max_itr << endl;
     for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
         	double i0 = image_in[y * 4 * height2 + x * 4 + 0];
@@ -388,12 +388,13 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 		        blue = b1x + (b2x - b1x) * frac;
 
 
-		    
+		   		
 		        if(i0 <= 0.0 || i0 > max_itr - 0.0){
 		            red = 0;
 		            green = 0;
 		            blue = 0;
 		        }
+		        
 
 
 		        
@@ -405,13 +406,16 @@ void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &ima
 			  blue = blue * 255;
 
 			  double amt = avg;
-			  if(avg < 50){ avg = 50;}
+
+			  
+			  if(avg < 30){ avg = 30;}
 			  if(i0 >  avg ){
 			  	red = 0;
 			  	green = 0;
 			  	blue = 0;
 
 			  }
+			  
 
 			
             image_out[y * 4 * height2 + x * 4 + 0] = red; 
@@ -434,7 +438,7 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
 
 void draw(std::vector<double>* image, int i, int max_threads, int width, int height,  double count ){
 
-	float max_itr =(1000 + (0.000058 * pow((float)(count + 100) * 2, 2.25)));
+	float max_itr =(100 + (0.000058 * pow((float)(count + KEY_SIZE) * 2, 2.25)));
 
 
     mpf_set_default_prec(100 + (int)((float)count / 10.0));
@@ -673,8 +677,18 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
 
 
 
+            
 
-            i = i + 1.0 + 1.0/log(2.0) * log(log(1000.0)/ log(sqrt(zx*zx + zy*zy)));
+
+
+
+            double i2 = i + 1.0 + 1.0/log(2.0) * log(log(1000.0)/ log(sqrt(zx*zx + zy*zy)));
+            
+            if(i2 == i2){ i = i2; }
+
+            
+
+
             double d = i - floor(i);
 
 
@@ -685,6 +699,10 @@ void draw(std::vector<double>* image, int i, int max_threads, int width, int hei
                 total_r_counter++;
 
             }
+            if(r != r){
+            	r = 0;
+            }
+            
 
             r = r - R_TARGET;
 
@@ -930,7 +948,7 @@ int main(){
         image1 = tmp;
 
         for (int i=0; i<max_threads; i++){
-            myThreads[i] = std::thread(draw, &image1, i, max_threads, width, height, (double)j / 2.0);
+            myThreads[i] = std::thread(draw, &image1, i, max_threads, width, height, (double)j);
 
         }
         for (int i=0; i<max_threads; i++){
@@ -952,14 +970,14 @@ int main(){
 
             interpolateImage(image1, image2, image3, j, i, KEY_SIZE);
 
-            float avg = computeAvg(image3, iterations/ 2.0);
+            float avg = computeAvg(image3, iterations);
 
 	    if(avg > max_avg) { max_avg = avg; }
 
 	    float diff_avg = max_avg - current_avg;
 	    current_avg += diff_avg/100.0;
 	    //current_avg = max_avg;
-            computeImage(image3, image, current_avg, iterations / 2.0);
+            computeImage(image3, image, current_avg, iterations);
 
 
             encodeOneStep((const char*)filename.data(), image, width2, height2);
