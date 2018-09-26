@@ -17,13 +17,14 @@ using namespace std;
 #define MAX_FRAMES 50000
 #define KEY_SIZE 50
 #define START 0
+#define START_AVG 0
 
-int width2 = 1000, height2 = 1000;
+int width2 = 2000, height2 = 2000;
 int alias = 1;
 int mult = 3;
 
 int width = width2 * alias, height = height2 * alias;
-int max_threads = 5;
+int max_threads = 10;
 
 static double total_r = 0.0;
 static double total_r_counter = 0.0;
@@ -317,7 +318,6 @@ float computeAvg(std::vector<double> &image, float count){
 void computeImage(std::vector<double> &image_in, std::vector<unsigned char> &image_out, double avg, double count){
 	count = count;
 	float max_itr =(100 + (0.000058 * pow((float)count * 2, 2.25)));
-	cout << "Max itr: " <<  max_itr << endl;
     for (int x = 0; x < width; x++){
         for (int y = 0; y < height; y++){
         	double i0 = image_in[y * 4 * height2 + x * 4 + 0];
@@ -924,8 +924,8 @@ int main(){
     std::thread myThreads[max_threads];
 
 
-    float max_avg = 0;
-    float current_avg = 0;
+    float max_avg = START_AVG;
+    float current_avg = START_AVG;
 
 	total_r = 0;
 	total_r_counter = 0;
@@ -955,7 +955,6 @@ int main(){
             myThreads[i].join();
         }
 
-	cout << "AVG = " << current_avg << endl;
 
 
         static bool s = false;
@@ -975,13 +974,14 @@ int main(){
 	    if(avg > max_avg) { max_avg = avg; }
 
 	    float diff_avg = max_avg - current_avg;
-	    current_avg += diff_avg/100.0;
+	    current_avg += diff_avg/50.0;
 	    //current_avg = max_avg;
             computeImage(image3, image, current_avg, iterations);
 
 
             encodeOneStep((const char*)filename.data(), image, width2, height2);
         }
+	cout << "AVG = " << current_avg << endl;
 
     }
 
